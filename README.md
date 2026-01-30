@@ -77,8 +77,8 @@ To study the effectiveness of **Retrieval-Augmented Generation** in improving re
 ## 🛠️ Tech Stack
 
 ### Core Technologies
-- **Language:** Python 3.10  
-- **LLM:** OpenAI GPT  
+- **Language:** Python 3.12
+- **LLM:** Groq (Llama 3.3 70B)
 - **Framework:** LangChain  
 - **Vector Database:** Pinecone  
 - **Embeddings:** Sentence Transformers  
@@ -86,8 +86,7 @@ To study the effectiveness of **Retrieval-Augmented Generation** in improving re
 
 ### Deployment & MLOps
 - Docker  
-- AWS EC2  
-- AWS ECR  
+- Docker Hub
 - GitHub Actions (CI/CD)  
 
 ---
@@ -137,7 +136,7 @@ git clone https://github.com/rashedulalbab253/Medibot_with-LLMs-LangChain-Pineco
 ### STEP 01- Create a conda environment after opening the repository
 
 ```bash
-conda create -n medibot python=3.10 -y
+conda create -n medibot python=3.12 -y
 ```
 
 ```bash
@@ -151,11 +150,11 @@ pip install -r requirements.txt
 ```
 
 
-### Create a `.env` file in the root directory and add your Pinecone & openai credentials as follows:
+### Create a `.env` file in the root directory and add your Pinecone & Groq credentials as follows:
 
 ```ini
 PINECONE_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-OPENAI_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+GROQ_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 ```
 
 
@@ -171,7 +170,7 @@ python app.py
 
 Now,
 ```bash
-open up localhost:
+open up localhost:8080
 ```
 
 
@@ -180,79 +179,25 @@ open up localhost:
 - Python
 - LangChain
 - Flask
-- GPT
+- Groq (Llama 3.3 70B)
 - Pinecone
 
 
 
-# AWS-CICD-Deployment-with-Github-Actions
+# Docker CI/CD with Github Actions
 
-## 1. Login to AWS console.
+## 1. Setup Docker Hub
+    - Create a Docker Hub account.
+    - Create a repository named `medibot`.
 
-## 2. Create IAM user for deployment
+## 2. Setup github secrets:
 
-	#with specific access
+   - `DOCKER_USERNAME`: Your Docker Hub username (`rashedulalbab1234`)
+   - `DOCKER_PASSWORD`: Your Docker Hub Personal Access Token
+   - `PINECONE_API_KEY`: Your Pinecone API Key
+   - `GROQ_API_KEY`: Your Groq API Key
 
-	1. EC2 access : It is virtual machine
-
-	2. ECR: Elastic Container registry to save your docker image in aws
-
-
-	#Description: About the deployment
-
-	1. Build docker image of the source code
-
-	2. Push your docker image to ECR
-
-	3. Launch Your EC2 
-
-	4. Pull Your image from ECR in EC2
-
-	5. Lauch your docker image in EC2
-
-	#Policy:
-
-	1. AmazonEC2ContainerRegistryFullAccess
-
-	2. AmazonEC2FullAccess
-
-	
-## 3. Create ECR repo to store/save docker image
-    - Save the URI: 315865595366.dkr.ecr.us-east-1.amazonaws.com/medicalbot
-
-	
-## 4. Create EC2 machine (Ubuntu) 
-
-## 5. Open EC2 and Install docker in EC2 Machine:
-	
-	
-	#optinal
-
-	sudo apt-get update -y
-
-	sudo apt-get upgrade
-	
-	#required
-
-	curl -fsSL https://get.docker.com -o get-docker.sh
-
-	sudo sh get-docker.sh
-
-	sudo usermod -aG docker ubuntu
-
-	newgrp docker
-	
-# 6. Configure EC2 as self-hosted runner:
-    setting>actions>runner>new self hosted runner> choose os> then run command one by one
-
-
-# 7. Setup github secrets:
-
-   - AWS_ACCESS_KEY_ID
-   - AWS_SECRET_ACCESS_KEY
-   - AWS_DEFAULT_REGION
-   - ECR_REPO
-   - PINECONE_API_KEY
-   - OPENAI_API_KEY
+## 3. Deployment
+    - Every push to the `main` branch will automatically build and push a new Docker image to `rashedulalbab1234/medibot:latest`.
 
 Author:Rashedul Albab
