@@ -82,7 +82,7 @@ To study the effectiveness of **Retrieval-Augmented Generation** in improving re
 - **Framework:** LangChain  
 - **Vector Database:** Pinecone  
 - **Embeddings:** Sentence Transformers  
-- **Backend:** Flask  
+- **Backend:** FastAPI  
 
 ### Deployment & MLOps
 - Docker  
@@ -178,7 +178,7 @@ open up localhost:8080
 
 - Python
 - LangChain
-- Flask
+- FastAPI
 - Groq (Llama 3.3 70B)
 - Pinecone
 
