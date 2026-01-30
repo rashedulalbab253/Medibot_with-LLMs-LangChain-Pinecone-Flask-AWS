@@ -9,9 +9,11 @@ This project emphasizes **hallucination reduction, safety, system reliability, a
 ## 🚀 Key Features
 - Domain-constrained medical question answering using RAG  
 - Reduced hallucinations via document-grounded generation  
-- Modular and scalable architecture  
-- Dockerized and deployed on AWS  
-- CI/CD using GitHub Actions  
+- Domain-constrained medical question answering using RAG  
+- Reduced hallucinations via document-grounded generation  
+- High-performance asynchronous backend with **FastAPI**
+- Scalable vector search using **Pinecone**
+- Automated CI/CD for Docker image builds
 - Healthcare safety–aware system design  
 
 ---
@@ -39,7 +41,7 @@ To study the effectiveness of **Retrieval-Augmented Generation** in improving re
 3. Embeddings are stored in Pinecone Vector Database  
 4. User queries are embedded and matched via similarity search  
 5. Retrieved context is injected into the LLM prompt  
-6. LLM generates a **context-grounded clinical response**
+6. **Groq (Llama 3.3 70B)** generates a **context-grounded clinical response**
 
 
 ---
@@ -111,93 +113,71 @@ To study the effectiveness of **Retrieval-Augmented Generation** in improving re
 - **Clinical Safety & Compliance Layer**  
   Incorporate rule-based safety checks and policy validation aligned with healthcare standards (e.g., HIPAA/GDPR) to support real-world clinical deployment.
 
-- **Uncertainty Estimation & Confidence Scoring**  
-  Add confidence estimation mechanisms to quantify uncertainty in responses and trigger Human-in-the-Loop intervention when confidence is low.
 
-- **Scalability & Performance Optimization**  
-  Optimize indexing, caching, and parallel retrieval to support large-scale document collections and high-concurrency clinical usage.
+# ⚙️ Installation & Setup
 
-- **Explainability & Evidence Tracing**  
-  Enhance transparency by explicitly linking generated answers to supporting document passages for improved interpretability and auditability.
-
-
-
-
-
-
-# How to run?
-### STEPS:
-
-Clone the repository
-
+### 1. Clone the repository
 ```bash
 git clone https://github.com/rashedulalbab253/Medibot_with-LLMs-LangChain-Pinecone-Flask-AWS.git
+cd Medibot_with-LLMs-LangChain-Pinecone-Flask-AWS
 ```
-### STEP 01- Create a conda environment after opening the repository
 
+### 2. Create environment
 ```bash
 conda create -n medibot python=3.12 -y
-```
-
-```bash
 conda activate medibot
 ```
 
-
-### STEP 02- install the requirements
+### 3. Install requirements
 ```bash
 pip install -r requirements.txt
 ```
 
-
-### Create a `.env` file in the root directory and add your Pinecone & Groq credentials as follows:
-
+### 4. Configuration
+Create a `.env` file in the root directory:
 ```ini
-PINECONE_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-GROQ_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+PINECONE_API_KEY = "your_pinecone_api_key"
+GROQ_API_KEY = "your_groq_api_key"
 ```
 
-
+### 5. Ingest Data
 ```bash
-# run the following command to store embeddings to pinecone
+# Store embeddings to Pinecone
 python store_index.py
 ```
 
+### 6. Run Application
 ```bash
-# Finally run the following command
 python app.py
 ```
+Open `http://localhost:8080` in your browser.
 
-Now,
+---
+
+# 🐳 Docker Support
+
+### Build Image
 ```bash
-open up localhost:8080
+docker build -t medibot .
 ```
 
+### Run Container
+```bash
+docker run -d -p 8080:8080 --name medibot -e PINECONE_API_KEY="your_api_key" -e GROQ_API_KEY="your_api_key" medibot
+```
 
-### Techstack Used:
+---
 
-- Python
-- LangChain
-- FastAPI
-- Groq (Llama 3.3 70B)
-- Pinecone
+# 🚀 CI/CD Pipeline
+This repository uses **GitHub Actions** to automatically build and push the Docker image to **Docker Hub** on every push to the `main` branch.
 
+### Required GitHub Secrets:
+- `DOCKER_USERNAME`: Your Docker Hub username
+- `DOCKER_PASSWORD`: Your Docker Hub Access Token
+- `PINECONE_API_KEY`: Your Pinecone API Key
+- `GROQ_API_KEY`: Your Groq API Key
 
+**Image Registry:** `rashedulalbab1234/medibot:latest`
 
-# Docker CI/CD with Github Actions
-
-## 1. Setup Docker Hub
-    - Create a Docker Hub account.
-    - Create a repository named `medibot`.
-
-## 2. Setup github secrets:
-
-   - `DOCKER_USERNAME`: Your Docker Hub username (`rashedulalbab1234`)
-   - `DOCKER_PASSWORD`: Your Docker Hub Personal Access Token
-   - `PINECONE_API_KEY`: Your Pinecone API Key
-   - `GROQ_API_KEY`: Your Groq API Key
-
-## 3. Deployment
-    - Every push to the `main` branch will automatically build and push a new Docker image to `rashedulalbab1234/medibot:latest`.
-
-Author:Rashedul Albab
+---
+**Author:** Rashedul Albab
