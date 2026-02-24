@@ -1,87 +1,460 @@
-<link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-<script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-	<title>Chatbot</title>
-	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
-		integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.5.0/css/all.css"
-		integrity="sha384-B4dIYHKNBt8Bc12p+WXckhzcICo0wtJAoU8YZTY5qE0Id1GSseTk6S+L3BlXeVIU" crossorigin="anonymous">
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', path='style.css')}}" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MediBot — Clinical Decision Support AI</title>
+    <meta name="description"
+        content="MediBot: An advanced RAG-powered clinical decision support chatbot for medical queries, symptom analysis, and drug information." />
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- App CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
 </head>
 
-
 <body>
-	<div class="container-fluid h-100">
-		<div class="row justify-content-center h-100">
-			<div class="col-md-8 col-xl-6 chat">
-				<div class="card">
-					<div class="card-header msg_head">
-						<div class="d-flex bd-highlight">
-							<div class="img_cont">
-								<img src="https://cdn-icons-png.flaticon.com/512/387/387569.png"
-									class="rounded-circle user_img">
-								<!-- <img src="https://www.prdistribution.com/spirit/uploads/pressreleases/2019/newsreleases/d83341deb75c4c4f6b113f27b1e42cd8-chatbot-florence-already-helps-thousands-of-patients-to-remember-their-medication.png" class="rounded-circle user_img"> -->
-								<span class="online_icon"></span>
-							</div>
-							<div class="user_info">
-								<span>Medical Chatbot</span>
-								<p>Ask me anything!</p>
-							</div>
-						</div>
-					</div>
-					<div id="messageFormeight" class="card-body msg_card_body">
 
+    <!-- Animated Background -->
+    <div class="bg-orbs" aria-hidden="true">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
 
-					</div>
-					<div class="card-footer">
-						<form id="messageArea" class="input-group">
-							<input type="text" id="text" name="msg" placeholder="Type your message..."
-								autocomplete="off" class="form-control type_msg" required />
-							<div class="input-group-append">
-								<button type="submit" id="send" class="input-group-text send_btn"><i
-										class="fas fa-location-arrow"></i></button>
-							</div>
-						</form>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+    <!-- App Shell -->
+    <div class="app-shell">
 
-	<script>
-		$(document).ready(function () {
-			$("#messageArea").on("submit", function (event) {
-				const date = new Date();
-				const hour = date.getHours();
-				const minute = date.getMinutes();
-				const str_time = hour + ":" + minute;
-				var rawText = $("#text").val();
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-title">MediBot</span>
+                        <span class="logo-sub">Clinical AI v2.0</span>
+                    </div>
+                </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
 
-				var userHtml = '<div class="d-flex justify-content-end mb-4"><div class="msg_cotainer_send">' + rawText + '<span class="msg_time_send">' + str_time + '</span></div><div class="img_cont_msg"><img src="https://i.ibb.co/d5b84Xw/Untitled-design.png" class="rounded-circle user_img_msg"></div></div>';
+            <div class="sidebar-section">
+                <button class="new-chat-btn" id="newChatBtn">
+                    <i class="fas fa-plus"></i>
+                    <span>New Consultation</span>
+                </button>
+            </div>
 
-				$("#text").val("");
-				$("#messageFormeight").append(userHtml);
+            <div class="sidebar-section">
+                <p class="sidebar-label">Quick Topics</p>
+                <ul class="quick-topics" id="quickTopics">
+                    <li><button class="topic-btn" data-query="What are the symptoms of Type 2 Diabetes?"><i
+                                class="fas fa-tint"></i> Type 2 Diabetes</button></li>
+                    <li><button class="topic-btn" data-query="Explain hypertension management guidelines"><i
+                                class="fas fa-heart"></i> Hypertension</button></li>
+                    <li><button class="topic-btn" data-query="Common drug interactions I should know about"><i
+                                class="fas fa-pills"></i> Drug Interactions</button></li>
+                    <li><button class="topic-btn" data-query="What are the warning signs of a heart attack?"><i
+                                class="fas fa-heartbeat"></i> Cardiac Emergency</button></li>
+                    <li><button class="topic-btn" data-query="Explain COVID-19 symptoms and treatment"><i
+                                class="fas fa-virus"></i> COVID-19</button></li>
+                    <li><button class="topic-btn" data-query="What is the recommended antibiotic for pneumonia?"><i
+                                class="fas fa-lungs"></i> Pneumonia</button></li>
+                </ul>
+            </div>
 
-				$.ajax({
-					data: {
-						msg: rawText,
-					},
-					type: "POST",
-					url: "/get",
-				}).done(function (data) {
-					var botHtml = '<div class="d-flex justify-content-start mb-4"><div class="img_cont_msg"><img src="https://cdn-icons-png.flaticon.com/512/387/387569.png" class="rounded-circle user_img_msg"></div><div class="msg_cotainer">' + data + '<span class="msg_time">' + str_time + '</span></div></div>';
-					$("#messageFormeight").append($.parseHTML(botHtml));
-				});
-				event.preventDefault();
-			});
-		});
-	</script>
+            <div class="sidebar-footer">
+                <div class="status-indicator" id="statusIndicator">
+                    <span class="status-dot"></span>
+                    <span class="status-text">AI Online</span>
+                </div>
+                <p class="disclaimer-text">
+                    <i class="fas fa-shield-alt"></i>
+                    For informational use only. Not a substitute for professional medical advice.
+                </p>
+                <p class="credit-text">Developed by Rashedul Albab</p>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-main">
+
+            <!-- Top Bar -->
+            <header class="chat-topbar">
+                <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="topbar-info">
+                    <div class="bot-avatar-sm">
+                        <i class="fas fa-stethoscope"></i>
+                        <span class="online-dot"></span>
+                    </div>
+                    <div>
+                        <h1 class="topbar-title">Clinical Decision Support</h1>
+                        <p class="topbar-sub">Powered by LLaMA 3.3 · RAG · Pinecone</p>
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <button class="icon-btn" id="clearBtn" title="Clear conversation" aria-label="Clear conversation">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                    <button class="icon-btn" id="infoBtn" title="About MediBot" aria-label="About MediBot">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Messages Area -->
+            <div class="messages-area" id="messagesArea" role="log" aria-live="polite" aria-label="Chat messages">
+
+                <!-- Welcome Message -->
+                <div class="welcome-card" id="welcomeCard">
+                    <div class="welcome-icon">
+                        <i class="fas fa-hospital-user"></i>
+                    </div>
+                    <h2 class="welcome-title">Welcome to MediBot</h2>
+                    <p class="welcome-desc">
+                        Your AI-powered Clinical Decision Support System. Ask me about symptoms, diseases, medications,
+                        treatment protocols, or any medical question.
+                    </p>
+                    <div class="welcome-chips">
+                        <button class="chip" data-query="What are early warning signs of sepsis?"><i
+                                class="fas fa-bolt"></i> Sepsis Signs</button>
+                        <button class="chip" data-query="How is Myocardial Infarction diagnosed?"><i
+                                class="fas fa-heart"></i> MI Diagnosis</button>
+                        <button class="chip" data-query="What medications are used for COPD?"><i
+                                class="fas fa-pills"></i> COPD Meds</button>
+                        <button class="chip" data-query="Explain the Glasgow Coma Scale"><i class="fas fa-brain"></i>
+                            Glasgow Scale</button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Typing Indicator (hidden by default) -->
+            <div class="typing-wrapper" id="typingWrapper" style="display:none;" aria-hidden="true">
+                <div class="bot-avatar-xs"><i class="fas fa-stethoscope"></i></div>
+                <div class="typing-bubble">
+                    <span></span><span></span><span></span>
+                </div>
+                <span class="typing-label">MediBot is thinking...</span>
+            </div>
+
+            <!-- Input Area -->
+            <footer class="input-area">
+                <form id="chatForm" class="input-form" autocomplete="off">
+                    <div class="input-wrapper">
+                        <textarea id="userInput" name="msg" class="chat-input"
+                            placeholder="Ask a medical question... (e.g. symptoms of appendicitis)" rows="1"
+                            maxlength="2000" required aria-label="Type your medical question"></textarea>
+                        <button type="submit" id="sendBtn" class="send-btn" aria-label="Send message">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <div class="input-footer">
+                        <span class="char-counter" id="charCounter">0 / 2000</span>
+                        <span class="input-hint"><kbd>Enter</kbd> to send · <kbd>Shift+Enter</kbd> for new line</span>
+                    </div>
+                </form>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- Info Modal -->
+    <div class="modal-overlay" id="infoModal" role="dialog" aria-modal="true" aria-label="About MediBot">
+        <div class="modal-card">
+            <button class="modal-close" id="modalClose" aria-label="Close modal"><i class="fas fa-times"></i></button>
+            <div class="modal-icon"><i class="fas fa-robot"></i></div>
+            <h2>About MediBot</h2>
+            <p>MediBot is a <strong>Clinical Decision Support System</strong> powered by:</p>
+            <ul class="modal-list">
+                <li><i class="fas fa-database"></i> <strong>Pinecone</strong> — Vector database for semantic search</li>
+                <li><i class="fas fa-brain"></i> <strong>LLaMA 3.3 70B</strong> — via Groq for ultra-fast inference</li>
+                <li><i class="fas fa-file-medical"></i> <strong>Medical PDFs</strong> — RAG-indexed knowledge base</li>
+                <li><i class="fas fa-microchip"></i> <strong>all-MiniLM-L6-v2</strong> — Sentence embeddings</li>
+            </ul>
+            <div class="modal-warning">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>Medical Disclaimer:</strong> MediBot is for informational and educational purposes only. It is
+                not a substitute for professional medical advice, diagnosis, or treatment. Always consult a qualified
+                healthcare professional.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ─── State ────────────────────────────────────────────────────
+        const SESSION_ID = 'sess_' + Math.random().toString(36).substr(2, 9);
+        let messageCount = 0;
+
+        // ─── DOM Refs ──────────────────────────────────────────────────
+        const messagesArea = document.getElementById('messagesArea');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const typingWrapper = document.getElementById('typingWrapper');
+        const welcomeCard = document.getElementById('welcomeCard');
+        const charCounter = document.getElementById('charCounter');
+        const clearBtn = document.getElementById('clearBtn');
+        const infoBtn = document.getElementById('infoBtn');
+        const infoModal = document.getElementById('infoModal');
+        const modalClose = document.getElementById('modalClose');
+        const newChatBtn = document.getElementById('newChatBtn');
+        const sidebar = document.getElementById('sidebar');
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+        // ─── Textarea Auto-resize ──────────────────────────────────────
+        userInput.addEventListener('input', () => {
+            userInput.style.height = 'auto';
+            userInput.style.height = Math.min(userInput.scrollHeight, 160) + 'px';
+            charCounter.textContent = `${userInput.value.length} / 2000`;
+        });
+
+        // ─── Enter to send ─────────────────────────────────────────────
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (userInput.value.trim()) chatForm.dispatchEvent(new Event('submit'));
+            }
+        });
+
+        // ─── Quick Topic Buttons ───────────────────────────────────────
+        document.querySelectorAll('.topic-btn, .chip').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const query = btn.dataset.query;
+                userInput.value = query;
+                userInput.dispatchEvent(new Event('input'));
+                chatForm.dispatchEvent(new Event('submit'));
+                if (window.innerWidth < 768) toggleSidebar(false);
+            });
+        });
+
+        // ─── Sidebar Toggle ────────────────────────────────────────────
+        function toggleSidebar(open) {
+            if (open === undefined) open = !sidebar.classList.contains('open');
+            sidebar.classList.toggle('open', open);
+        }
+        mobileMenuBtn.addEventListener('click', () => toggleSidebar());
+        document.getElementById('sidebarToggle').addEventListener('click', () => toggleSidebar());
+
+        // ─── New Chat ──────────────────────────────────────────────────
+        newChatBtn.addEventListener('click', () => {
+            clearConversation();
+        });
+
+        // ─── Clear Button ──────────────────────────────────────────────
+        clearBtn.addEventListener('click', () => {
+            clearConversation();
+        });
+
+        async function clearConversation() {
+            // Clear server-side history
+            const formData = new FormData();
+            formData.append('session_id', SESSION_ID);
+            await fetch('/clear-history', { method: 'POST', body: formData });
+
+            // Clear UI
+            messagesArea.innerHTML = '';
+            messagesArea.appendChild(welcomeCard);
+            welcomeCard.style.display = 'flex';
+            messageCount = 0;
+            showToast('Conversation cleared.');
+        }
+
+        // ─── Info Modal ────────────────────────────────────────────────
+        infoBtn.addEventListener('click', () => infoModal.classList.add('active'));
+        modalClose.addEventListener('click', () => infoModal.classList.remove('active'));
+        infoModal.addEventListener('click', (e) => { if (e.target === infoModal) infoModal.classList.remove('active'); });
+
+        // ─── Toast Notification ────────────────────────────────────────
+        function showToast(msg, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${msg}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 10);
+            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 400); }, 3000);
+        }
+
+        // ─── Render User Message ───────────────────────────────────────
+        function appendUserMessage(text) {
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const div = document.createElement('div');
+            div.className = 'message message-user animate-in';
+            div.innerHTML = `
+                <div class="message-bubble user-bubble">
+                    <p class="message-text">${escapeHtml(text)}</p>
+                </div>
+                <div class="message-meta user-meta">
+                    <span class="message-time">${time}</span>
+                    <div class="user-avatar"><i class="fas fa-user"></i></div>
+                </div>
+            `;
+            messagesArea.appendChild(div);
+            scrollToBottom();
+        }
+
+        // ─── Render Bot Message ────────────────────────────────────────
+        function appendBotMessage(data) {
+            const now = new Date();
+            const time = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const answer = data.answer || data;
+            const sources = data.sources || [];
+            const elapsed = data.elapsed ? `${data.elapsed}s` : '';
+
+            // Format markdown-like bold and bullets
+            const formattedAnswer = formatMedicalText(answer);
+
+            // Build sources HTML
+            let sourcesHtml = '';
+            if (sources.length > 0) {
+                const sourceItems = sources.slice(0, 3).map(s =>
+                    `<span class="source-tag"><i class="fas fa-file-medical-alt"></i> ${escapeHtml(s.source)} (p.${s.page})</span>`
+                ).join('');
+                sourcesHtml = `<div class="message-sources"><i class="fas fa-database"></i> Sources: ${sourceItems}</div>`;
+            }
+
+            const div = document.createElement('div');
+            div.className = 'message message-bot animate-in';
+            div.innerHTML = `
+                <div class="bot-avatar-xs"><i class="fas fa-stethoscope"></i></div>
+                <div class="message-content">
+                    <div class="message-bubble bot-bubble">
+                        <div class="message-text">${formattedAnswer}</div>
+                        ${sourcesHtml}
+                    </div>
+                    <div class="message-meta bot-meta">
+                        <span class="message-time">${time}</span>
+                        ${elapsed ? `<span class="elapsed-badge"><i class="fas fa-bolt"></i> ${elapsed}</span>` : ''}
+                        <button class="copy-btn" title="Copy response" aria-label="Copy response">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Copy button
+            div.querySelector('.copy-btn').addEventListener('click', () => {
+                navigator.clipboard.writeText(answer).then(() => showToast('Copied to clipboard!'));
+            });
+
+            messagesArea.appendChild(div);
+            scrollToBottom();
+        }
+
+        // ─── Format Medical Text ───────────────────────────────────────
+        function formatMedicalText(text) {
+            return text
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                // Bold (**text**)
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                // Headers (## heading)
+                .replace(/^## (.+)$/gm, '<h4 class="msg-heading">$1</h4>')
+                // Bullet points
+                .replace(/^[•\-\*] (.+)$/gm, '<li>$1</li>')
+                .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul class="msg-list">${m}</ul>`)
+                // Numbered lists
+                .replace(/^\d+\. (.+)$/gm, '<li>$1</li>')
+                // Warning: match ⚠️ emoji OR plain 'Important:' / 'Warning:' prefix
+                .replace(/(\u26a0\ufe0f[^\n]+)/g, '<div class="msg-warning"><i class="fas fa-exclamation-triangle"></i> $1</div>')
+                .replace(/((?:Important|Warning|Note|Caution|Emergency):[^\n]+)/g, '<div class="msg-warning"><i class="fas fa-exclamation-triangle"></i> $1</div>')
+                // Line breaks
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/\n/g, '<br/>')
+                // Wrap in paragraph
+                .replace(/^(.[\s\S]*)$/, '<p>$1</p>');
+        }
+
+        // ─── Escape HTML ───────────────────────────────────────────────
+        function escapeHtml(text) {
+            return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // ─── Scroll to Bottom ──────────────────────────────────────────
+        function scrollToBottom() {
+            setTimeout(() => {
+                messagesArea.scrollTo({ top: messagesArea.scrollHeight, behavior: 'smooth' });
+            }, 50);
+        }
+
+        // ─── Set Loading State ─────────────────────────────────────────
+        function setLoading(loading) {
+            sendBtn.disabled = loading;
+            userInput.disabled = loading;
+            typingWrapper.style.display = loading ? 'flex' : 'none';
+            typingWrapper.setAttribute('aria-hidden', String(!loading));
+            if (loading) scrollToBottom();
+        }
+
+        // ─── Form Submit ───────────────────────────────────────────────
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = userInput.value.trim();
+            if (!msg) return;
+
+            // Hide welcome card
+            if (welcomeCard && welcomeCard.parentNode) {
+                welcomeCard.style.display = 'none';
+            }
+
+            messageCount++;
+
+            // Show user message
+            appendUserMessage(msg);
+            userInput.value = '';
+            userInput.style.height = 'auto';
+            charCounter.textContent = '0 / 2000';
+
+            // Show loading
+            setLoading(true);
+
+            try {
+                const formData = new FormData();
+                formData.append('msg', msg);
+                formData.append('session_id', SESSION_ID);
+
+                const response = await fetch('/get', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const data = await response.json();
+                setLoading(false);
+
+                if (!response.ok) {
+                    appendBotMessage({ answer: data.answer || 'An error occurred. Please try again.', sources: [] });
+                } else {
+                    appendBotMessage(data);
+                }
+
+            } catch (error) {
+                setLoading(false);
+                appendBotMessage({
+                    answer: '⚠️ **Connection Error:** I could not reach the server. Please check your connection and try again.',
+                    sources: [],
+                });
+                console.error('Fetch error:', error);
+            }
+        });
+
+        // ─── Auto-focus input ──────────────────────────────────────────
+        userInput.focus();
+    </script>
 
 </body>
 
