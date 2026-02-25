@@ -267,6 +267,22 @@ async def health_check():
         )
 
 
+@app.get("/api/test-groq")
+async def test_groq():
+    """Diagnostic endpoint to test Groq API connectivity."""
+    try:
+        g_client = get_groq_client()
+        # Simple test completion
+        resp = g_client.chat.completions.create(
+            model=GROQ_MODEL,
+            messages=[{"role": "user", "content": "Hi"}],
+            max_tokens=10
+        )
+        return {"status": "success", "response": resp.choices[0].message.content}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+
 @app.get("/api/info")
 async def api_info():
     """API information endpoint."""
