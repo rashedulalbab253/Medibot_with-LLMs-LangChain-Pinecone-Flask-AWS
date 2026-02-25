@@ -217,11 +217,19 @@ async def chat(
         })
 
     except Exception as e:
-        logger.error(f"[Session: {session_id}] Error: {e}", exc_info=True)
+        import traceback
+        error_detail = traceback.format_exc()
+        logger.error(f"[Session: {session_id}] Full Traceback:\n{error_detail}")
+        
+        # In production, we usually hide details, but for debugging same-problem issues, we'll show it
+        # You can set DEBUG=True in Render dash to see this in UI
+        is_debug = os.environ.get("DEBUG", "true").lower() == "true"
+        display_error = str(e) if is_debug else "I apologize, I encountered an error processing your request."
+
         return JSONResponse(
             status_code=500,
             content={
-                "answer": "I apologize, I encountered an error processing your request. Please try again. If the issue persists, contact support.",
+                "answer": f"⚠️ **Error:** {display_error}\n\nPlease check your API keys and Render logs for more details.",
                 "error": str(e),
                 "sources": [],
             }
