@@ -66,21 +66,36 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="static/templates")
 
-# ─── Model & Client Initialization ───────────────────────────────
-logger.info("Initializing embedding model...")
-embedding_model = download_hugging_face_embeddings()
+# ─── Model & Client Initialization (Lazy Loading) ──────────────────
+embedding_model = None
+pc = None
+index = None
+groq_client = None
 
-logger.info("Connecting to Pinecone...")
-pc = Pinecone(api_key=PINECONE_API_KEY)
-index = pc.Index(INDEX_NAME)
+def get_embedding_model():
+    global embedding_model
+    if embedding_model is None:
+        logger.info("Initializing embedding model...")
+        embedding_model = download_hugging_face_embeddings()
+    return embedding_model
 
-logger.info("Initializing Groq client...")
-groq_client = Groq(api_key=GROQ_API_KEY)
+def get_pinecone_index():
+    global pc, index
+    if pc is None:
+        logger.info("Connecting to Pinecone...")
+        pc = Pinecone(api_key=PINECONE_API_KEY)
+        index = pc.Index(INDEX_NAME)
+    return index
+
+def get_groq_client():
+    global groq_client
+    if groq_client is None:
+        logger.info("Initializing Groq client...")
+        groq_client = Groq(api_key=GROQ_API_KEY)
+    return groq_client
 
 # Per-session chat history: session_id → deque of messages
 chat_histories: dict[str, deque] = {}
-
-logger.info("MediBot is ready! 🏥")
 
 # ─── Helper Functions ─────────────────────────────────────────────
 
@@ -95,8 +110,10 @@ def retrieve_context(query: str, top_k: int = TOP_K) -> tuple[str, list[dict]]:
     """
     Query Pinecone with the user's message and return formatted context + sources.
     """
-    query_vector = embedding_model.encode(query).tolist()
-    response = index.query(
+    model = get_embedding_model()
+    idx = get_pinecone_index()
+    query_vector = model.encode(query).tolist()
+    response = idx.query(
         vector=query_vector,
         top_k=top_k,
         include_metadata=True,
@@ -172,7 +189,8 @@ async def chat(
         messages = build_messages(session_id, msg, context)
 
         # 3. Call Groq LLM
-        completion = groq_client.chat.completions.create(
+        g_client = get_groq_client()
+        completion = g_client.chat.completions.create(
             model=GROQ_MODEL,
             messages=messages,
             max_tokens=MAX_TOKENS,
@@ -223,7 +241,8 @@ async def clear_history(session_id: str = Form(default="default")):
 async def health_check():
     """Health check endpoint for monitoring and deployment."""
     try:
-        stats = index.describe_index_stats()
+        idx = get_pinecone_index()
+        stats = idx.describe_index_stats()
         vector_count = stats.get("total_vector_count", 0)
         return JSONResponse({
             "status": "healthy",
@@ -257,10 +276,11 @@ async def api_info():
 
 # ─── Entrypoint ──────────────────────────────────────────────────
 if __name__ == '__main__':
+    port = int(os.environ.get("PORT", 8080))
     uvicorn.run(
         "app:app",
         host="0.0.0.0",
-        port=8080,
+        port=port,
         reload=False,
         log_level="info",
     )
