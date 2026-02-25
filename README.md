@@ -78,8 +78,8 @@ This project investigates how **retrieval grounding, architectural constraints, 
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/rashedulalbab253/Medibot_with-LLMs-LangChain-Pinecone-Flask-AWS.git
-cd Medibot_with-LLMs-LangChain-Pinecone-Flask-AWS
+git clone https://github.com/rashedulalbab253/Clinical-Decision-Support-System-RAG-Powered-Medical-Chatbot.git
+cd Clinical-Decision-Support-System-RAG-Powered-Medical-Chatbot
 ```
 
 ### 2. Create environment
