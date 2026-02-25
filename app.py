@@ -34,8 +34,8 @@ logger = logging.getLogger("medibot")
 # ─── App Initialization ──────────────────────────────────────────
 load_dotenv()
 
-PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY')
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+PINECONE_API_KEY = os.environ.get('PINECONE_API_KEY', '').strip() or None
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '').strip() or None
 GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.3-70b-versatile')
 INDEX_NAME = os.environ.get('PINECONE_INDEX_NAME', 'medical-chatbot')
 TOP_K = int(os.environ.get('RAG_TOP_K', '5'))
