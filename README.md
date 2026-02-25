@@ -1,120 +1,80 @@
-# 🧠 Medibot — RAG-Based Clinical Decision Support System
+# 🧠 MediBot v2.0 — Production-Grade Clinical Decision Support System
 
-Medibot is a **Retrieval-Augmented Generation (RAG)** powered clinical decision support chatbot that provides **domain-grounded, reliable medical answers** by constraining Large Language Models (LLMs) to curated medical literature.
+MediBot is an advanced **Retrieval-Augmented Generation (RAG)** powered clinical decision support chatbot. It is designed to provide **domain-grounded, reliable medical answers** by constraining Large Language Models (LLMs) to curated medical literature.
 
-This project emphasizes **hallucination reduction, safety, system reliability, and production-grade deployment**, making it suitable for **AI/ML Engineer roles** and **PhD-level research portfolios**.
+This project emphasizes **hallucination reduction, safety, system reliability, and state-of-art UI/UX**, making it suitable for both **AI/ML Engineer portfolios** and **clinical research environments**.
 
 ---
 
-## 🚀 Key Features
-- Domain-constrained medical question answering using RAG  
-- Reduced hallucinations via document-grounded generation  
-- Domain-constrained medical question answering using RAG  
-- Reduced hallucinations via document-grounded generation  
-- High-performance asynchronous backend with **FastAPI**
-- Scalable vector search using **Pinecone**
-- Automated CI/CD for Docker image builds
-- Healthcare safety–aware system design  
+## 🚀 What's New in v2.0
+- **Architectural Overhaul:** Transitioned from Flask to a high-performance **FastAPI** asynchronous backend.
+- **Premium User Interface:** A brand new, fully responsive, clinical-grade **Light Glassmorphism Theme** with interactive components, FontAwesome icons, and typing animations.
+- **Conversational Memory:** Implemented session-based chat history, allowing the AI to understand multi-turn medical inquiries.
+- **Advanced RAG Pipeline:** Intelligent context retrieval filtering (relevance score > 0.3) and precise source citations (document & page mapping) directly in the UI.
+- **Optimized Data Ingestion:** Sentence-aware chunking with MD5 hash deduplication for cleaner vector stores, processed natively through **Pinecone**.
+- **Production-Ready Docker:** Upgraded Dockerfile with optimized layer caching, system dependencies, and integrated application health checks.
 
 ---
 
 ## 🎯 Motivation
 Large Language Models demonstrate strong reasoning abilities but are **unreliable in high-risk domains such as healthcare**, where hallucinated responses can cause serious harm.
 
-This project investigates whether **retrieval grounding and architectural constraints** can:
+This project investigates how **retrieval grounding, architectural constraints, and robust system prompts** can:
 - Improve factual correctness  
-- Reduce hallucinations  
+- Eliminate speculative generation  
 - Enable safe clinical decision support **without model fine-tuning**
-
----
-
-## 🧠 Research Objective
-To study the effectiveness of **Retrieval-Augmented Generation** in improving reliability and safety of LLM-based medical question answering systems when restricted to **domain-specific clinical documents**.
 
 ---
 
 ## 🏗️ System Architecture
 
 ### High-Level RAG Pipeline
-1. Medical PDFs are ingested and chunked  
-2. Text chunks are embedded using Sentence Transformers  
-3. Embeddings are stored in Pinecone Vector Database  
-4. User queries are embedded and matched via similarity search  
-5. Retrieved context is injected into the LLM prompt  
-6. **Groq (Llama 3.3 70B)** generates a **context-grounded clinical response**
-
+1. **Ingestion:** Medical PDFs are recursively parsed, cleaned, and split using sentence-boundary-aware chunking.
+2. **Embedding:** Text chunks are batch-encoded into 384-dimensional dense vectors using `SentenceTransformers`.
+3. **Storage:** Vectors and serializable metadata are upserted into a **Pinecone Serverless Vector Database**.
+4. **Retrieval:** User queries are embedded, matched via cosine similarity, and strictly filtered.
+5. **Generation:** **Groq (LLaMA 3.3 70B)** receives the user query, chat history, and context to generate a safely constrained clinical response.
 
 ---
 
 ## 🧪 Methodology
 
-### Data Ingestion & Preprocessing
-- PDF documents loaded using `DirectoryLoader` and `PyPDFLoader`
-- Recursive character splitting  
-- Chunk size: 500 characters  
-- Overlap: 20 characters  
-- Optimized for semantic continuity
+### Data Preprocessing
+- **Source:** Directory-based PDF extraction.
+- **Chunking Strategy:** Recursive character splitting.
+  - Chunk size: `800` characters  
+  - Overlap: `150` characters  
+- **Quality Control:** Built-in text cleaning and node deduplication via MD5 hashing.
 
 ### Vector Representation
-- Embedding model: `all-MiniLM-L6-v2`
-- 384-dimensional dense embeddings
-- Cosine similarity–based retrieval
+- **Model:** `all-MiniLM-L6-v2`
+- **Metric:** Cosine similarity.
 
-### Retrieval-Augmented Generation
-- Top-k relevant document chunks retrieved from Pinecone
-- Context injected directly into the LLM prompt
-- Prevents speculative or open-ended generation
-
----
-
-## 📊 Evaluation Summary
-- Low-latency medical information retrieval  
-- Improved factual grounding compared to vanilla prompting  
-- Responses constrained strictly to provided medical literature  
-
-> This project prioritizes **reliability, interpretability, and safety** over generative creativity.
+### RAG Constraints & Safety
+- **Prompt Engineering:** Clinical-grade persona prompt with strict instructions to route emergencies and decline non-medical questions.
+- **Context Filtering:** Only fragments with a similarity score `> 0.3` are injected into the prompt.
+- **Source Transparency:** All bot responses natively display the exact source document to the user.
 
 ---
 
 ## 🛠️ Tech Stack
 
 ### Core Technologies
-- **Language:** Python 3.12
-- **LLM:** Groq (Llama 3.3 70B)
-- **Framework:** LangChain  
-- **Vector Database:** Pinecone  
-- **Embeddings:** Sentence Transformers  
-- **Backend:** FastAPI  
+- **Language:** Python 3.12+
+- **LLM Engine:** Groq API (LLaMA 3.3 70B Versatile)
+- **Vector Database:** Pinecone (Serverless)
+- **Embeddings:** HuggingFace `sentence-transformers`
+- **Backend Framework:** FastAPI & Uvicorn
+- **Frontend:** Vanilla JS, HTML5, Modern CSS (CSS Variables, Flexbox)
 
 ### Deployment & MLOps
-- Docker  
-- Docker Hub
-- GitHub Actions (CI/CD)  
+- **Containerization:** Docker
+- **Repository:** Docker Hub
+- **CI/CD:** GitHub Actions (Automated building & pushing)
 
 ---
 
-## 🔮 Future Work
-
-- **Multimodal Clinical RAG**  
-  Extend the system to support medical images (X-ray, MRI, CT) by integrating vision encoders and multimodal retrieval for image–text grounded clinical reasoning.
-
-- **Physician-in-the-Loop Validation**  
-  Introduce expert feedback loops where clinicians can validate, correct, or annotate responses to improve system reliability and trustworthiness.
-
-- **Automated Knowledge Base Expansion**  
-  Enable continuous synchronization with external medical sources such as PubMed, clinical trial registries, and treatment guidelines using scheduled ingestion pipelines.
-
-- **Advanced Retrieval Strategies**  
-  Explore hybrid retrieval techniques combining dense vectors with sparse methods (BM25) and reranking models to further improve context relevance.
-
-- **Comparative RAG vs Fine-Tuning Study**  
-  Conduct empirical studies comparing RAG-based grounding against domain-specific LLM fine-tuning in terms of accuracy, hallucination rate, and computational cost.
-
-- **Clinical Safety & Compliance Layer**  
-  Incorporate rule-based safety checks and policy validation aligned with healthcare standards (e.g., HIPAA/GDPR) to support real-world clinical deployment.
-
-
-# ⚙️ Installation & Setup
+## ⚙️ Installation & Setup
 
 ### 1. Clone the repository
 ```bash
@@ -136,27 +96,28 @@ pip install -r requirements.txt
 ### 4. Configuration
 Create a `.env` file in the root directory:
 ```ini
-PINECONE_API_KEY = "your_pinecone_api_key"
-GROQ_API_KEY = "your_groq_api_key"
+PINECONE_API_KEY="your_pinecone_api_key_here"
+GROQ_API_KEY="your_groq_api_key_here"
 ```
 
 ### 5. Ingest Data
+Process your local PDFs and build the Pinecone index:
 ```bash
-# Store embeddings to Pinecone
 python store_index.py
 ```
 
 ### 6. Run Application
+Start the FastAPI server:
 ```bash
-python app.py
+uvicorn app:app --host 0.0.0.0 --port 8080 --reload
 ```
-Open `http://localhost:8080` in your browser.
+Open `http://localhost:8080` in your web browser.
 
 ---
 
-# 🐳 Docker Support
+## 🐳 Docker Support
 
-### Build Image
+### Build Image Locally
 ```bash
 docker build -t medibot .
 ```
@@ -168,16 +129,15 @@ docker run -d -p 8080:8080 --name medibot -e PINECONE_API_KEY="your_api_key" -e 
 
 ---
 
-# 🚀 CI/CD Pipeline
+## 🚀 CI/CD Pipeline
 This repository uses **GitHub Actions** to automatically build and push the Docker image to **Docker Hub** on every push to the `main` branch.
 
-### Required GitHub Secrets:
+### Required GitHub Repository Secrets:
 - `DOCKER_USERNAME`: Your Docker Hub username
 - `DOCKER_PASSWORD`: Your Docker Hub Access Token
-- `PINECONE_API_KEY`: Your Pinecone API Key
-- `GROQ_API_KEY`: Your Groq API Key
+- *(Optional)* Pinecone and Groq keys can be passed as runtime variables.
 
 **Image Registry:** `rashedulalbab1234/medibot:latest`
 
 ---
-**Author:** Rashedul Albab
+**Designed & Developed by Rashedul Albab**
